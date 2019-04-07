@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t jobiz/fib-react -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run jobiz/fib-react npm test -- --coverage
+
+after_sucess:
+  - docker build -t jobiz/multi-client ./client    
+  - docker build -t jobiz/multi-nginx ./nginx
+  - docker build -t jobiz/multi-server ./server
+  - docker build -t jobiz/multi-worker ./worker
+  - echo "$DOCKER_PSWD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push jobiz/multi-client   
+  - docker push jobiz/multi-nginx 
+  - docker push jobiz/multi-server 
+  - docker push jobiz/multi-worker 
